@@ -12,9 +12,10 @@ from scipy.optimize import curve_fit
 import os
 import json
 import importlib.util
-spec = importlib.util.spec_from_file_location("functions_engraving_study", "D:/Documents/Boulot/Scripts/Grenoble/Engraving_study/functions_engraving_study.py")
-fes = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fes)
+##spec = importlib.util.spec_from_file_location("functions_engraving_study", "D:/Documents/Boulot/Scripts/Grenoble/Engraving_study/functions_engraving_study.py")
+##fes = importlib.util.module_from_spec(spec)
+##spec.loader.exec_module(fes)
+import functions_engraving_study as fes
 from functions import *
 from data_selector import DataSelector
 
