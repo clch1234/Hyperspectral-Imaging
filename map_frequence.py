@@ -67,11 +67,16 @@ def map_frequence_batch(**kwargs):
     sens = ds.sens_var.get()
     if not sens in ('10', '01'):
         raise ValueError('Sens should be either "10" or "01", %s received.'%sens)
-    aller_retour = ds.AR_var.get()
-    if aller_retour == 'None':
-        aller_retour = None
-    if not aller_retour in ('A', 'R', None):
+
+    AR = ds.AR_var.get()
+    if AR == 'None':
+        AR = None
+    if not AR in ('A', 'R', None, 'both'):
         raise ValueError('AR should be either "A", "R" or None, %s received.'%aller_retour)
+    if AR == 'both':
+        ARs = ('A', 'R')
+    else:
+        ARs = (AR, )
 
     savefigs = ds.savefigs_var.get()
     savefiles = ds.savefiles_var.get()
@@ -80,8 +85,6 @@ def map_frequence_batch(**kwargs):
     kwargs['batch'] = batch
     kwargs['workdir'] = workdir
     kwargs['datadir'] = datadir
-    kwargs['sens'] = sens
-    kwargs['aller_retour'] = aller_retour
     kwargs['savefigs'] = savefigs
     kwargs['savefiles'] = savefiles
 
@@ -89,6 +92,14 @@ def map_frequence_batch(**kwargs):
 
     results = []
     for rectangle in rectangles:
+        for ii, aller_retour in enumerate(ARs):
+            kwargs['aller_retour'] = aller_retour
+            if ii == 0
+                kwargs['sens'] = sens
+            elif ii == 1:
+                # Flip the direction for 2nd round
+                kwargs['sens'] = '01' if sens == '10' else '10'
+
         tu = map_frequence(rectangle, **kwargs)
         results.append(tu)
     return results

@@ -42,7 +42,7 @@ class DataSelector(object):
         self.sens_var = StringVar(value='10')
         self.sens_entry = Entry(self.window, textvariable=self.sens_var)
 
-        self.AR_label = Label(self.window, text="AR (A, R, or None) :")
+        self.AR_label = Label(self.window, text="AR (A, R, both or None) :")
         self.AR_var = StringVar(value='None')
         self.AR_entry = Entry(self.window, textvariable=self.AR_var)
 
