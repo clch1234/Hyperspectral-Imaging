@@ -94,14 +94,14 @@ def map_frequence_batch(**kwargs):
     for rectangle in rectangles:
         for ii, aller_retour in enumerate(ARs):
             kwargs['aller_retour'] = aller_retour
-            if ii == 0
+            if ii == 0:
                 kwargs['sens'] = sens
             elif ii == 1:
                 # Flip the direction for 2nd round
                 kwargs['sens'] = '01' if sens == '10' else '10'
 
-        tu = map_frequence(rectangle, **kwargs)
-        results.append(tu)
+            tu = map_frequence(rectangle, **kwargs)
+            results.append(tu)
     return results
 
 def map_frequence(rectangle, **kwargs):
@@ -459,6 +459,11 @@ def map_frequence(rectangle, **kwargs):
     F2 = f2.reshape((yshape, xshape))
     print('Peak frequencies extracted')
 
+    # Suptitle for our figures
+    tit = 'Rectangle '+rectangle
+    if aller_retour in ('A', 'R'):
+        tit += ' (%s)'%aller_retour
+
     # Plot frequency maps
     print('Plotting...')
     fig_raw1, ax_raw1 = subplots()
@@ -469,7 +474,7 @@ def map_frequence(rectangle, **kwargs):
     xlabel('X position (px)')
     ylabel('Y position (px)')
     title('Frequency map, Mode 1')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
     ax_raw1.invert_yaxis()
     tight_layout()
 
@@ -481,7 +486,7 @@ def map_frequence(rectangle, **kwargs):
     xlabel('X position (px)')
     ylabel('Y position (px)')
     title('Frequency map, Mode 2')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
     ax_raw2.invert_yaxis()
     tight_layout()
 
@@ -495,7 +500,7 @@ def map_frequence(rectangle, **kwargs):
         plot([], [], 'ok', label='False positives ?') # Dummy plot for legend
     xlabel('Y position (px)')
     ylabel('Frequency (kHz)')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
     legend()
     tight_layout()
 
@@ -506,7 +511,7 @@ def map_frequence(rectangle, **kwargs):
     xlabel('Frequency (kHz)')
     ylabel('Spectrum nb')
     title('Spectrogram')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
     ax_spectrogram.invert_yaxis()
     for ii, f in false_positives:
         plot(f/1e3, ii, 'ow', ms=2, markerfacecolor="None")
@@ -520,7 +525,7 @@ def map_frequence(rectangle, **kwargs):
     xlabel('X position (px)')
     ylabel('Frequency (Hz)')
     title('Frequency per line, mode 1')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
 
     fig_lines2, ax_lines2 = subplots()
     for nn in range(F2.shape[0]):
@@ -529,7 +534,7 @@ def map_frequence(rectangle, **kwargs):
     xlabel('X position (px)')
     ylabel('Frequency (Hz)')
     title('Frequency per line, mode 2')
-    suptitle('Rectangle '+rectangle)
+    suptitle(tit)
     tight_layout()
     """
 
@@ -539,7 +544,7 @@ def map_frequence(rectangle, **kwargs):
         xlabel('Line nb. (px)')
         ylabel('Current (pA)')
         title('Currents after each correction')
-        suptitle('Rectangle '+rectangle)
+        suptitle(tit)
         tight_layout()
 
     #show()

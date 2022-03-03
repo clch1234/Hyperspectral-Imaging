@@ -8,7 +8,7 @@ Author :
 """
 import os
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 
 class DataSelector(object):
     def __init__(self, description):
@@ -43,8 +43,10 @@ class DataSelector(object):
         self.sens_entry = Entry(self.window, textvariable=self.sens_var)
 
         self.AR_label = Label(self.window, text="AR (A, R, both or None) :")
+##        self.AR_var = StringVar(value='None')
+##        self.AR_entry = Entry(self.window, textvariable=self.AR_var)
         self.AR_var = StringVar(value='None')
-        self.AR_entry = Entry(self.window, textvariable=self.AR_var)
+        self.AR_combo = ttk.Combobox(self.window, textvariable=self.AR_var, values=['None', 'both', 'A', 'R'])
 
         self.savefigs_var = BooleanVar(value=True)
         self.savefigs_check = Checkbutton(self.window, text="Save figures", variable=self.savefigs_var)
@@ -61,7 +63,8 @@ class DataSelector(object):
         self.sens_label.pack()
         self.sens_entry.pack()
         self.AR_label.pack()
-        self.AR_entry.pack()
+##        self.AR_entry.pack()
+        self.AR_combo.pack()
         self.savefigs_check.pack()
         self.savefiles_check.pack()
         self.end_button.pack()
