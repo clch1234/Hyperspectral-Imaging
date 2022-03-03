@@ -290,14 +290,12 @@ def map_frequence(rectangle, **kwargs):
     nb_peaks = 0
     nb_false_positives = 0
     false_positives = []
-    temp = []
     for ii in range(len(spectrogram)):
         spectrum = spectrogram[ii]
         ff = F[ii]
 
         if general_last_quarter_for_threshold == 'auto':
             last_quarter_for_threshold = spectrum[:len(spectrum)//4].max() > spectrum[-len(spectrum)//4:].max()
-            temp.append(int(last_quarter_for_threshold))
         else:
             last_quarter_for_threshold = general_last_quarter_for_threshold
 
@@ -533,10 +531,6 @@ def map_frequence(rectangle, **kwargs):
         suptitle('Rectangle '+rectangle)
         tight_layout()
 
-    fig_temp, ax_temp = subplots()
-    plot(temp, 'o')
-    title('last_quarter_for_threshold')
-
     #show()
     print('Plots done.')
 
@@ -577,4 +571,4 @@ def map_frequence(rectangle, **kwargs):
 
     print('All good ! \(^_^)/ \n')
 
-    return F, I, spectrogram, F1, F2, f1, f2, false_positives, X_ini, Y_ini, X, Y, bitmap, temp
+    return F, I, spectrogram, F1, F2, f1, f2, false_positives, X_ini, Y_ini, X, Y, bitmap
