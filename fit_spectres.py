@@ -82,7 +82,7 @@ def fit_spectrums_batch(**kwargs):
                 # Flip the direction for 2nd round
                 kwargs['sens'] = '01' if sens == '10' else '10'
 
-            tu = map_frequence(rectangle, **kwargs)
+            tu = fit_spectrums(rectangle, **kwargs)
             results.append(tu)
     return results
 

@@ -1,6 +1,6 @@
 # -*- coding: cp1252 -*-
 """
-Script for comparing the damping rates for multiple acquisitions on a single NW
+Script for comparing the frequency evolutions for multiple acquisitions on a single NW
 
 Author :
     Clément Chardin
@@ -29,7 +29,7 @@ ds.savefiles_check['state'] = 'disabled'
 ds.sens_label['state'] = 'disabled'
 ds.sens_entry['state'] = 'disabled'
 ds.AR_label['state'] = 'disabled'
-ds.AR_entry['state'] = 'disabled'
+ds.AR_combo['state'] = 'disabled'
 ds.select_directory()
 
 batch = ds.directory.split('/')[-1]
