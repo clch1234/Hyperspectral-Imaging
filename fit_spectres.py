@@ -275,7 +275,7 @@ def fit_spectrums(rectangle, **kwargs):
             #while counter < nb_peaks:
             #counter += 1
             #print('Spectrum %i, %i peak(s)'%(ii, counter))
-            print('Spectrum %i, %i peak(s)'%(ii, nb_peaks))
+            #print('Spectrum %i, %i peak(s)'%(ii, nb_peaks))
             #if nb_peaks == 1 or len(startValues) < 4:
             minL = argmin(spectrumLoc)
             minS = spectrum[minL]

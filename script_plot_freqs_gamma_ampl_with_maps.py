@@ -155,8 +155,8 @@ if len(ys1) > 0:
     norm = colors.Normalize(vmin=nanmin(f1s)/1e3, vmax=nanmax(f1s)/1e3)
     sc = scatter(xs1, ys1, c=f1s/1e3, norm=norm)
     colorbar(sc, label='Frequency (kHz)')
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 fig_map_f2, ax_map_f2 = subplots()
 pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
@@ -168,8 +168,8 @@ if len(ys2) > 0:
     norm = colors.Normalize(vmin=nanmin(f2s)/1e3, vmax=nanmax(f2s)/1e3)
     sc = scatter(xs2, ys2, c=f2s/1e3, norm=norm)
     colorbar(sc, label='Frequency (kHz)')
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 fig_map_gammas1, ax_map_gammas1 = subplots()
 pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
@@ -181,8 +181,8 @@ if len(ys1) > 0:
     norm = colors.Normalize(vmin=nanmin(gammas1)/2/pi, vmax=nanmax(gammas1)/2/pi)
     sc = scatter(xs1, ys1, c=gammas1/2/pi, norm=norm)
     colorbar(sc)
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 fig_map_gammas2, ax_map_gammas2 = subplots()
 pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
@@ -194,8 +194,8 @@ if len(ys2) > 0:
     norm = colors.Normalize(vmin=nanmin(gammas2)/2/pi, vmax=nanmax(gammas2)/2/pi)
     sc = scatter(xs2, ys2, c=gammas2/2/pi, norm=norm)
     colorbar(sc)
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 fig_map_ampls1, ax_map_ampls1 = subplots()
 pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
@@ -207,8 +207,8 @@ if len(ys1) > 0:
     norm = colors.LogNorm(vmin=nanmin(ampls1), vmax=nanmax(ampls1))
     sc = scatter(xs1, ys1, c=ampls1, norm=norm)
     colorbar(sc)
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 fig_map_ampls2, ax_map_ampls2 = subplots()
 pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
@@ -220,8 +220,8 @@ if len(ys2) > 0:
     norm = colors.LogNorm(vmin=nanmin(ampls2), vmax=nanmax(ampls2))
     sc = scatter(xs2, ys2, c=ampls2, norm=norm)
     colorbar(sc)
-xlim(nanmin(xs), nanmax(xs))
-ylim(nanmin(ys), nanmax(ys))
+xlim(max(-5, nanmin(xs[xs != -inf])), min(5, nanmax(xs[xs != inf])))
+ylim(nanmin(ys[ys != -inf]), nanmax(ys[ys != inf]))
 
 if savefigs:
     fig_freqs.savefig(figsdir+'\\frequencies')
