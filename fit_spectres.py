@@ -263,8 +263,8 @@ def fit_spectrums(rectangle, **kwargs):
             bounds_sup = [inf]
             counter = 0
 
-            diffs = []
             """
+            diffs = []
             while max(spectrumLoc) - min(spectrumLoc) > .3:
                 counter += 1
                 if counter > nb_peaks: ### max nb of peaks, emergency break to avoid infinite loop

@@ -14,7 +14,7 @@ import os
 from donnees_rsa import *
 
 dat = '20211126'
-batch = 'Fil 3 manuel'
+batch = 'Fil 2 manuel'
 
 savefigs = True
 
