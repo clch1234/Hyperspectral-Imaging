@@ -92,10 +92,16 @@ ax_all2.legend()
 
 """ Plot figures """
 fig_freqs, ax_freqs = subplots()
-xlabel('Defocalisation ($\mu m$)')
+xlabel('Defocalisation (mm)')
 ylabel('Frequency (Hz)')
 
 errorbar(defoc, f1s, yerr=df1, marker='o', linestyle='')
 errorbar(defoc, f2s, yerr=df2, marker='o', linestyle='')
+
+""" Save figures """
+fig_freqs.savefig("D:\\Documents\\Boulot\\Grenoble\\Data\\%s\\defocus"%kwargs['dat'])
+fig_all1.savefig("D:\\Documents\\Boulot\\Grenoble\\Data\\%s\\defocus_mode1"%kwargs['dat'])
+fig_all2.savefig("D:\\Documents\\Boulot\\Grenoble\\Data\\%s\\defocus_mode2"%kwargs['dat'])
+print("Figures saved")
 
 show()
