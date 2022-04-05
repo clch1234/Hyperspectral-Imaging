@@ -10,6 +10,8 @@ from matplotlib.pyplot import *
 import os
 from functions import *
 from data_selector import DataSelector
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -94,6 +96,18 @@ suptitle('Amplitude ratio')
 title('%s - Rectangle %s'%(batch, rectangle))
 legend()
 
+fig_pts, ax_pts = subplots()
+plot(xs1[maskl], ys1[maskl], 'o', label='Left')
+plot(xs1[maskr], ys1[maskr], 'o', label='Right')
+rects = [Rectangle((-.5, 0), 1, 1)]
+pc = PatchCollection(rects, facecolor='gray', alpha=.5, edgecolor='k')
+ax_pts.add_collection(pc)
+legend()
+xlabel('x/D')
+ylabel('y/D')
+suptitle('Position of points')
+title('%s - Rectangle %s'%(batch, rectangle))
+
 show()
 
 figsdir = datadir+u'\\%s\\%s\\Figures\\Splitting_etc'%(dat, batch)
@@ -103,3 +117,4 @@ if savefigs:
     fig_split.savefig(figsdir+'\\splitting')
     fig_gamma.savefig(figsdir+'\\gamma_difference')
     fig_ampl.savefig(figsdir+'\\amplitude_ratio')
+    fig_pts.savefig(figsdir+'\\points_position')
