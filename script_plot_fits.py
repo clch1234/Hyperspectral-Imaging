@@ -48,7 +48,7 @@ if not AR in ('A', 'R', None):
 
 savefigs = ds.savefigs_var.get()
 
-print('Starting plot data and maps script.')
+print('Starting plot fits script.')
 print('Batch :', batch, '\nRectangle :', rectangle)
 
 """ Load or create data directory """
@@ -156,7 +156,7 @@ for ii, spectrum in enumerate(spectrogram):
 
         fig, ax = subplots()
         plot(ff/1e3, spectrum, label='Data')
-        plot(ff/1e3, fit, label='$\Omega_1/2\pi = %s$\n$\Gamma_1/2\pi = %s$\n$A_1 = %s$\n$\Omega_2/2\pi = %s$\n$\Gamma_2/2\pi = %s$\n$A_2 = %s$'%(omega1/2/pi, gamma1/2/pi, A1, omega2/2/pi, gamma2/2/pi, A2))
+        plot(ff/1e3, fit, label='$\Omega_1/2\pi \simeq %i$\n$\Gamma_1/2\pi \simeq %i$\n$A_1 \simeq %.4f$\n$\Omega_2/2\pi \simeq %i$\n$\Gamma_2/2\pi \simeq %i$\n$A_2 \simeq %.4f$'%(omega1/2/pi, gamma1/2/pi, A1, omega2/2/pi, gamma2/2/pi, A2))
         legend()
         xlabel('Frequency (kHz)')
         ylabel('dB')

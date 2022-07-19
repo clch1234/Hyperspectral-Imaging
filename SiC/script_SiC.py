@@ -1,7 +1,7 @@
 # -*- coding: cp1252 -*-
 """
 Functions for fitting the spectrums of vibrations of a SiC nanowire with lorentzian shape
-We assume that we only have one peak (one direction of viubration visible)
+We assume that we only have one peak (one direction of vibration visible)
 
 Author :
     Clément Chardin

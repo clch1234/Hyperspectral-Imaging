@@ -1,6 +1,7 @@
 # -*- coding: cp1252 -*-
 """
 Data selector : a pop-up window which lets the user choose whoch data use for multiple scripts of the nanowire vibrations project
+Batches selector : a pop-up to select batches from a set. Created for script_compare_multiple_acq.py
 
 Author :
     Clément Chardin
@@ -71,4 +72,41 @@ class DataSelector(object):
         self.window.geometry("400x400")
 
     def select_directory(self):
+        self.window.mainloop()
+
+class BatchesSelector(object):
+    def __init__(self, batches):
+        super(BatchesSelector, self).__init__()
+        self.result = []
+        self.batches = batches
+        self.setup_ui()
+
+    def end(self):
+        for batch in self.batches:
+            var = getattr(self, 'var_%s'%batch)
+            if var.get():
+                self.result.append(batch)
+        self.window.destroy()
+
+    def setup_ui(self):
+        self.window = Tk()
+        self.window.title("Batches Selector")
+
+        self.label = Label(self.window, text="Select batches to plot.")
+
+        for batch in self.batches:
+            var = BooleanVar(value=False)
+            check = Checkbutton(self.window, text=batch, variable=var)
+            setattr(self, 'var_%s'%batch, var)
+            setattr(self, 'check_%s'%batch, check)
+
+        self.end_button = Button(self.window, text="OK", command=self.end)
+
+        self.label.pack()
+        for batch in self.batches:
+            getattr(self, 'check_%s'%batch).pack()
+        self.end_button.pack()
+        #self.window.geometry("400x400")
+
+    def select_batches(self):
         self.window.mainloop()

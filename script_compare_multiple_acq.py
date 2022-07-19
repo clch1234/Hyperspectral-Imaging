@@ -12,7 +12,9 @@ from matplotlib import colors
 import os
 from data_RSA_new import *
 from functions import *
-from data_selector import DataSelector
+from data_selector import DataSelector, BatchesSelector
+from PyQt5 import QtWidgets, QtGui, QtCore
+import sys
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -62,6 +64,48 @@ def idx_batch(batch):
 batches = [dirname for dirname in os.listdir(datadir+'\\'+dat) if idx_batch(batch) == idx_batch(dirname) and os.path.isdir(datadir+'\\%s\\%s\\Data_files'%(dat, dirname))]
 print('Detected batches :', batches)
 
+""" Select batches """
+"""
+class BatchesSelector(QtWidgets.QDialog):
+    def __init__(self, batches, parent=None):
+        super(BatchesSelector, self).__init__(parent)
+        self.batches = batches
+        self.result = []
+
+        self.lay = QtWidgets.QVBoxLayout()
+        self.setLayout(self.lay)
+
+        self.lab = QtWidgets.QLabel('Select batches to plot.')
+        self.lay.addWidget(self.lab)
+
+        for batch in  self.batches:
+            check = QtWidgets.QCheckBox(batch)
+            self.lay.addWidget(check)
+            setattr(self, 'check_%s'%batch, check)
+
+        self.but = QtWidgets.QPushButton('OK')
+        self.lay.addWidget(self.but)
+        self.but.clicked.connect(self.OK)
+
+    def OK(self):
+        for batch in self.batches:
+            check = getattr(self, 'check_%s'%batch)
+            if check.isChecked():
+                self.result.append(batch)
+        self.accept()
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication([])
+    bs = BatchesSelector(batches)
+    bs.exec_()
+    batches = bs.result
+    sys.exit(app.exec_())
+"""
+bs = BatchesSelector(batches)
+bs.select_batches()
+batches = bs.result
+print('Batches kept after selection:', batches)
+
 """ Create figures """
 figsdir = datadir + '\\%s\\Figures\\'%dat + ' + '.join(batches)
 if not os.path.isdir(figsdir):
@@ -88,6 +132,13 @@ ax_splitting.set_title('Mode Splitting')
 ##ax_ampls.set_xlabel('y/L')
 ##ax_ampls.set_ylabel('Amplitude')
 ##ax_ampls.set_title('Amplitudes')
+
+fig_freq_norm_10, ax10 = subplots()
+xlabel('Normalized position y/L')
+ylabel('Normalised fresquency shift')
+fig_freq_norm_01, ax01 = subplots()
+xlabel('Normalized position y/L')
+ylabel('Normalised fresquency shift')
 
 for batch in batches:
     print('\n\n')
@@ -215,11 +266,25 @@ for batch in batches:
 ##        ax_ampls.semilogy(ys2, ampls2, marker=marker, linestyle='', label='%s - Mode 2'%batch)
 ##    ax_ampls.legend()
 
+        # Figure notmalized freq
+        ax = ax10 if sens == '10' else ax01
+        ff1s, ff2s = (f1s-nanmean(f1s))/nanmean(f1s), (f2s-nanmean(f2s))/nanmean(f2s)
+        ax.plot(ys1, ff1s, 'o', label=batch+' Mode 1')
+        if len(f2s) > 0:
+            ax.plot(ys2, ff2s, 'o', label=batch+' Mode 2')
+
+ax10.legend()
+ax01.legend()
+fig_freq_norm_10.tight_layout()
+fig_freq_norm_01.tight_layout()
+
 if savefigs:
     fig_freqs.savefig(figsdir+'\\frequencies')
     fig_splitting.savefig(figsdir+'\\splitting')
 ##    fig_gammas.savefig(figsdir+'\\gammas')
 ##    fig_ampls.savefig(figsdir+'\\amplitudes')
+    fig_freq_norm_10.savefig(figsdir+'\\normalized frequencies 10')
+    fig_freq_norm_01.savefig(figsdir+'\\normalized frequencies 01')
     print('Figures saved')
 else:
     print('savefigs set to', savefigs)

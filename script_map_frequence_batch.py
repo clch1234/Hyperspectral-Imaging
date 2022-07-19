@@ -38,35 +38,9 @@ Possible values for criteria_for_peak_selection :
     - above_noise_max
     - above_noise_mean
 """
+
 results = mf.map_frequence_batch(**kwargs)
+# Tuples in results (one for each rectangle) contains :
+# F, I, spectrogram, F1, F2, f1, f2, false_positives, X_ini, Y_ini, X, Y, bitmap
 
-"""
-aller_retour_ini = kwargs['aller_retour']
-sens_ini = kwargs['sens']
-for ii in range(1, 2):
-    rectangle = str(ii)
-    if kwargs['aller_retour'] is None:
-        tu = mf.map_frequence(rectangle, **kwargs)
-        F, I, spectrogram, F1, F2, f1, f2, false_positives, X_ini, Y_ini, X, Y, bitmap = tu
-    elif kwargs['aller_retour'] == 'both':
-        kwargs['aller_retour'] = 'A'
-        tu = mf.map_frequence(rectangle, **kwargs)
-        FA, IA, spectrogramA, F1A, F2A, f1A, f2A, false_positivesA, X_iniA, Y_iniA, XA, YA, bitmapA = tu
-
-        # Switch 'sens' and 'aller_retour'
-        if kwargs['sens'] == '10':
-            kwargs['sens'] = '01'
-        elif kwargs['sens'] == '01':
-            kwargs['sens'] = '10'
-        kwargs['aller_retour'] = 'R'
-        tu = mf.map_frequence(rectangle, **kwargs)
-        FR, IR, spectrogramR, F1R, F2R, f1R, f2R, false_positivesR, X_iniR, Y_iniR, XR, YR, bitmapR = tu
-
-        # Reinitialize for next rectangle
-        kwargs['aller_retour'] = aller_retour_ini
-        kwargs['sens'] = sens_ini
-
-    else:
-        raise ValueError('Wrong value of "aller_retour" : '+str(kwargs['aller_retour']))
-"""
 show()

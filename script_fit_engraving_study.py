@@ -47,7 +47,7 @@ savefiles = ds.savefiles_var.get()
 ##AR = None # Can be 'A', 'R' or None
 
 do_fit11 = True
-do_fit12 = True
+do_fit12 = False
 
 remove_aberrant = True
 normalize_from_global_image = False

@@ -110,7 +110,10 @@ def detect_NW_edges(bitmap, X_ini):
             edges.append((nan, nan))
             centers.append(nan)
             widths.append(nan)
-    centers, widths, edges, masks = array(centers), array(widths), array(edges), array(masks)
+    centers = array(centers)
+    widths = array(widths)
+    edges = array(edges)
+    masks = array(masks)
 
     # Detect 1st and last lines
     first_line_found = None

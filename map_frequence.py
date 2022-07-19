@@ -350,6 +350,7 @@ def map_frequence(rectangle, **kwargs):
                 idx_start2 = min(len(ff), abs(ff - (f_max + df)).argmin())
 
                 if spectrum[:idx_stop1].max() > spectrum[idx_start2:].max() or f_max+df > ff.max():
+                    # Check left of the 1st peak
                     idx_other_peak = spectrum[:idx_stop1].argmax()
 
                     # Check in all the search area for a peak
@@ -361,7 +362,8 @@ def map_frequence(rectangle, **kwargs):
                     else:
                         only_one_peak = True
 
-                elif spectrum[:idx_stop1].max() < spectrum[idx_start2:].max() or f_max+df > ff.max():
+                elif spectrum[:idx_stop1].max() < spectrum[idx_start2:].max() or f_max-df < ff.min():
+                    # Check right of the 1st peak
                     idx_other_peak = idx_start2 + spectrum[idx_start2:].argmax()
 
                     # Check in all the search area for required_numpoints consecutive above threshold
@@ -386,22 +388,8 @@ def map_frequence(rectangle, **kwargs):
                         f1.append(f_max)
                         f2.append(nan)
 
-##                    # Else : put the value in the array that has the closest last (non-nan) value
-##                    # Unless the new value is more than df away from that last value in which case it is probabmy a false positive (not peak)
-##                    elif abs(f1[mask1[-1]] - f_max) < abs(f2[mask2[-1]] - f_max):
-##                        if 
-##                            f1.append(f_max)
-##                        else:
-##                            f1.append(nan)
-##                        f2.append(nan)
-##                    elif abs(f1[mask1[-1]] - f_max) >= abs(f2[mask2[-1]] - f_max):
-##                        if abs(f_max - f2[mask2[-1]]) < df:
-##                            f2.append(f_max)
-##                        else:
-##                            f2.append(nan)
-##                        f1.append(nan)
-
                     else:
+                        # We compare with the mean of the last 10 values recorded for either mode
                         m1 = mean([f1[mask1[kk]] for kk in range(max(-10, -len(mask1)), 0, 1)])
                         m2 = mean([f2[mask2[kk]] for kk in range(max(-10, -len(mask2)), 0, 1)])
 
