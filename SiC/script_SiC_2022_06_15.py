@@ -14,7 +14,7 @@ import os
 from donnees_rsa import *
 from numerical_values import *
 
-fil = '9'
+fil = '4_2'
 savefigs = True # Save figures
 savefiles = True # Save results of fits
 plot_only = False # Use saved results of fits instead of fitting again

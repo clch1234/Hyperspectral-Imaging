@@ -60,6 +60,7 @@ dd_threshold_NW_edges = {'NW_843_fil_5_spec_0001':-62,
                          'NW_843_fil_5_spec_0005':-62,
                          'NW_843_fil_5_spec_0006':-62.5,
                          'NW_843_fil_5_spec_0007':-62,
+                         'NW_843_fil_5_spec_0009':-65,
 
                          'NW_843_fil_6_spec_0013':-60,
 
@@ -72,6 +73,7 @@ dd_threshold_NW_edges = {'NW_843_fil_5_spec_0001':-62,
 # Nb of dB above noise level for peak detection
 # Default value if not in this dictionary : 12.5
 dd_threshold_peak = {'NW_843_fil_5_spec_0001':12.5,
+                     'NW_843_fil_5_spec_0009':12.,
 
                      'NW_843_fil_6_spec_0011':12.6,
                      'NW_843_fil_6_spec_0013':12.5,
@@ -84,6 +86,9 @@ dd_threshold_peak = {'NW_843_fil_5_spec_0001':12.5,
 
 # Minimum frequency for mode 2.1
 dd_freq_min1 = {'NW_843_fil_5_spec_0001':None,
+                'NW_843_fil_5_spec_0008':5.06e6,
+                'NW_843_fil_5_spec_0009':5.09e6,
+
                 'NW_843_fil_6_spec_0011':3.06e6,
                 'NW_843_fil_6_spec_0012':3.1e6,
                 'NW_843_fil_6_spec_0013':3.15e6,
@@ -97,6 +102,9 @@ dd_freq_min1 = {'NW_843_fil_5_spec_0001':None,
 
 # Frequency between modes 2.1 and 2.2
 dd_freq_middle = {'NW_843_fil_5_spec_0001':None,
+                  'NW_843_fil_5_spec_0008':5.08e6,
+                  'NW_843_fil_5_spec_0009':5.13e6,
+
                   'NW_843_fil_6_spec_0011':lambda t: 3.11e6 if t<1500 else 3.15e6,
                   'NW_843_fil_6_spec_0012':3.18e6,
                   'NW_843_fil_6_spec_0013':3.22e6,
@@ -110,6 +118,9 @@ dd_freq_middle = {'NW_843_fil_5_spec_0001':None,
 
 # Maximum frequency for mode 2.2
 dd_freq_max2 = {'NW_843_fil_5_spec_0001':None,
+                'NW_843_fil_5_spec_0008':None,
+                'NW_843_fil_5_spec_0009':None,
+
                 'NW_843_fil_6_spec_0011':3.25e6,
                 'NW_843_fil_6_spec_0012':3.25e6,
                 'NW_843_fil_6_spec_0013':3.30e6,

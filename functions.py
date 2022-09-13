@@ -42,7 +42,7 @@ def load_fit_data(savedir, batch, prefixe_AR=''):
     return (f1s, gammas1, ampls1, xs1, ys1,
             f2s, gammas2, ampls2, xs2, ys2)
 
-def correct_inversions(f1s_all, f2s_all, gammas1_all, gammas2_all, ampls1_all, ampls2_all):
+def correct_inversions(f1s_all, f2s_all, gammas1_all=None, gammas2_all=None, ampls1_all=None, ampls2_all=None):
     """ Correct inversions in mode 1 and mode 2 """
     nb_corrections = 0
     for ii in range(len(f1s_all)):
@@ -51,13 +51,15 @@ def correct_inversions(f1s_all, f2s_all, gammas1_all, gammas2_all, ampls1_all, a
             f1s_all[ii] = f2s_all[ii]
             f2s_all[ii] = tempf
 
-            tempg = gammas1_all[ii]
-            gammas1_all[ii] = gammas2_all[ii]
-            gammas2_all[ii] = tempg
+            if not gammas1_all is None and not gammas2_all is None:
+                tempg = gammas1_all[ii]
+                gammas1_all[ii] = gammas2_all[ii]
+                gammas2_all[ii] = tempg
 
-            tempa = ampls1_all[ii]
-            ampls1_all[ii] = ampls2_all[ii]
-            ampls2_all[ii] = tempa
+            if not ampls1_all is None and not ampls2_all is None:
+                tempa = ampls1_all[ii]
+                ampls1_all[ii] = ampls2_all[ii]
+                ampls2_all[ii] = tempa
 
             nb_corrections += 1
 
@@ -66,11 +68,13 @@ def correct_inversions(f1s_all, f2s_all, gammas1_all, gammas2_all, ampls1_all, a
         f2s_all.insert(0, f1s_all[0])
         f1s_all = f1s_all[1:]
 
-        gammas2_all.insert(0, gammas1_all[0])
-        gammas1_all = gammas1_all[1:]
+        if not gammas1_all is None and not gammas2_all is None:
+            gammas2_all.insert(0, gammas1_all[0])
+            gammas1_all = gammas1_all[1:]
 
-        ampls2_all.insert(0, ampls1_all[0])
-        ampls1_all = ampls1_all[1:]
+        if not ampls1_all is None and not ampls2_all is None:
+            ampls2_all.insert(0, ampls1_all[0])
+            ampls1_all = ampls1_all[1:]
 
         ii += 1
 
@@ -79,11 +83,14 @@ def correct_inversions(f1s_all, f2s_all, gammas1_all, gammas2_all, ampls1_all, a
         f1s_all.insert(0, f2s_all[0])
         f2s_all = f2s_all[1:]
 
-        gammas1_all.insert(0, gammas2_all[0])
-        gammas2_all = gammas2_all[1:]
+        if not gammas1_all is None and not gammas2_all is None:
+            gammas1_all.insert(0, gammas2_all[0])
+            gammas2_all = gammas2_all[1:]
 
-        ampls1_all.insert(0, ampls2_all[0])
-        ampls2_all = ampls2_all[1:]
+
+        if not ampls1_all is None and not ampls2_all is None:
+            ampls1_all.insert(0, ampls2_all[0])
+            ampls2_all = ampls2_all[1:]
 
         jj += 1
 

@@ -16,7 +16,7 @@ import parameters_parallel_acquisition as ppa
 
 nw = '843'
 fil = '6'
-spec = '17'
+spec = '11'
 dat = '20220622'
 key = 'NW_'+nw+'_fil_'+fil+'_spec_'+spec.zfill(4)
 

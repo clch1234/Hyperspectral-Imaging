@@ -38,7 +38,7 @@ import parameters_parallel_acquisition as ppa
 
 nw = '843'
 fil = '6'
-spec = '14'
+spec = '11'
 dat = '20220622'
 key = 'NW_'+nw+'_fil_'+fil+'_spec_'+spec.zfill(4)
 
@@ -166,7 +166,7 @@ edges = array(edges)
 
 """ Get approximate end of line times """
 times_edges = array([[times_RSA[edges[ii, 0]], times_RSA[edges[ii, 1]]] for ii in range(len(edges))])
-times_end_of_lines = array([(times_edges[ii, 1]+times_edges[ii+1, 0])/2 for ii in range(len(times_edges)-1)])
+times_end_of_lines = array([(times_edges[ii, 1]+times_edges[ii+1, 0])/2 for ii in range(len(times_edges)-1)] + [(times_edges[-1, 1]+times_RSA.max())/2])
 
 """ Get frequency and time for each peak """
 idx_min1 = abs(ff-freq_min1).argmin()

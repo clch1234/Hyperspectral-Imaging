@@ -15,6 +15,7 @@ from data_RSA_new import *
 from functions import *
 from data_selector import DataSelector
 from fit_spectres import multi_lorentz
+import datetime
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -55,12 +56,10 @@ print('Batch :', batch, '\nRectangle :', rectangle)
 filesdir = datadir+u'\\%s\\%s\\Data_files'%(dat, batch)
 if not os.path.isdir(dirname+'\\Fits'):
     os.mkdir(dirname+'\\Fits')
-if len(os.listdir(ds.directory+'\\Fits')) > 0:
-    fitsdir = ds.directory+'\\Fits\\'+sorted(os.listdir(ds.directory+'\\Fits'))[0]
-else:
-    import datetime
-    time = datetime.datetime.now()
-    fitsdir = ds.directory+'\\Fits\\'+time.strftime("%d-%m-%Y-%H-%M-%S")
+
+time = datetime.datetime.now()
+fitsdir = ds.directory+'\\Fits\\'+time.strftime("%d-%m-%Y-%H-%M-%S")
+
 if AR in ('A', 'R'):
     fitsdir += ' - '+AR
 if not os.path.isdir(fitsdir):
