@@ -1,8 +1,9 @@
 # -*- coding: cp1252 -*-
 """
-Script for calculating average and difference of frequency during a round-trip of measurement,
-fit average with temperature contribution on frequency shift
-Here only for the mode measured in ViBr
+Script to take the difference between to directions of
+measurement of a single NW, the remove it from the
+frequency evolution and fit the result as the
+temperature contribution to the frequency evolution.
 
 Author :
     Clément Chardin
@@ -16,6 +17,7 @@ from data_RSA_new import *
 from functions import *
 import functions_engraving_study as fes
 from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -23,43 +25,15 @@ warnings.filterwarnings("ignore")
 
 dat = '20220622'
 batch_01 = 'Fil 6_3'
-batch_10 = 'Fil 6_4'
-first_direction = '10' # Only useful if batch_10 == batch_01, ignored otherwise
+batch_10 = 'Fil 6_2'
 rectangle = '1'
 mode = 1 # nb of mechanical mode
+kind = 'quadratic' # Type of interpolation (use linear, quadratic or cubic)
 
 savefigs = False
-do_fits = True
+do_fits = False
 
 dirname = "D:\\Documents\\Boulot\\Grenoble\\Data\\%s"%dat
-
-""" Create figures """
-if savefigs:
-    figsdir = dirname + '\\Figures\\Sum_diff_%s_%s'%(batch_01, batch_10)
-    if not os.path.isdir(figsdir):
-        os.makedirs(figsdir)
-
-idx_color = 0
-
-fig11, ax11 = subplots()
-ax11.set_xlabel('y/L')
-ax11.set_ylabel('Frequency (kHz)')
-ax11.set_title('1st mechanical mode, 1st peak')
-
-fig12, ax12 = subplots()
-ax12.set_xlabel('y/L')
-ax12.set_ylabel('Frequency (kHz)')
-ax12.set_title('1st mechanical mode, 2nd peak')
-
-fig_diff1, ax_diff1 = subplots()
-ax_diff1.set_xlabel('y/L')
-ax_diff1.set_ylabel('Frequency difference (kHz) Mode 1')
-ax_diff1.set_title('Difference "10" - "01"')
-
-fig_sum1, ax_sum1 = subplots()
-ax_sum1.set_xlabel('y/L')
-ax_sum1.set_ylabel('Frequency difference (kHz)')
-ax_sum1.set_title('Average ("10" + "01") / 2 Mode 1')
 
 """ Load mode 1 """
 if batch_10 == batch_01:
@@ -193,6 +167,7 @@ to_remove2 = where((f12_10 < min_freq2) | (f12_10 > max_freq2))[0]
 f11_10[to_remove1] = nan
 f12_10[to_remove1] = nan
 
+""" Differences and sums """
 # Reshape freqs
 F11_01 = f11_01.reshape(X_01.shape)
 F12_01 = f12_01.reshape(X_01.shape)
@@ -200,147 +175,136 @@ F12_01 = f12_01.reshape(X_01.shape)
 F11_10 = f11_10.reshape(X_10.shape)
 F12_10 = f12_10.reshape(X_10.shape)
 
-# Plot raw data
-ax11.plot(Y_01.flatten(), f11_01/1e3, 'o', label=batch_01)
-ax12.plot(Y_01.flatten(), f12_01/1e3, 'o', label=batch_01)
-ax11.plot(Y_10.flatten(), f11_10/1e3, 'o', label=batch_10)
-ax12.plot(Y_10.flatten(), f12_10/1e3, 'o', label=batch_10)
+y_avg = (Y_01[:, 0] + Y_10[:, 0]) / 2
 
-# Plot mean: points kept for sum and difference
-ax11.plot(Y_01[:, 0], nanmean(F11_01, axis=1)/1e3, 'sk', mfc='none')
-ax12.plot(Y_01[:, 0], nanmean(F12_01, axis=1)/1e3, 'sk', mfc='none')
-ax11.plot(Y_10[:, 0], nanmean(F11_10, axis=1)/1e3, 'sk', mfc='none')
-ax12.plot(Y_10[:, 0], nanmean(F12_10, axis=1)/1e3, 'sk', mfc='none')
+diff11 = nanmean(F11_10, axis=1)-nanmean(F11_01, axis=1)
+diff12 = nanmean(F12_10, axis=1)-nanmean(F12_01, axis=1)
 
-idx_color += 1
+avg11 = (nanmean(F11_10, axis=1)+nanmean(F11_01, axis=1))/2
+avg12 = (nanmean(F12_10, axis=1)+nanmean(F12_01, axis=1))/2
 
-""" Harmonize sizes """
-# For mode 1
-if dat == '20220622' and batch_01 == 'Fil 6_3' and batch_10 == 'Fil 6_4':
-    start1_01 = 0
-    stop1_01 = F11_01.shape[1]
-    start1_10 = 0
-    stop1_10 = -1
+""" Interpolation """
+y_01 = Y_01.flatten()
+# Remove nan values
+yd11 = y_avg[where(logical_not(isnan(diff11)))[0]]
+d11 = diff11[where(logical_not(isnan(diff11)))[0]]
+# Interpolate
+f11 = interp1d(yd11, d11, kind=kind, fill_value='extrapolate')
 
-elif dat == '20220622' and batch_01 == 'Fil 6_1' and batch_10 == 'Fil 6_2':
-    start1_01 = 0
-    stop1_01 = F11_01.shape[1]
-    start1_10 = 0
-    stop1_10 = F11_10.shape[1]
+y_10 = Y_10.flatten()
+# Remove nan values
+yd12 = y_avg[where(logical_not(isnan(diff12)))[0]]
+d12 = diff12[where(logical_not(isnan(diff12)))[0]]
+# Interpolate
+f12 = interp1d(yd12, d12, kind=kind, fill_value='extrapolate')
 
-elif dat == '20220622' and batch_01 == 'Fil 6_3' and batch_10 == 'Fil 6_2':
-    start1_01 = 0
-    stop1_01 = F11_01.shape[1]
-    start1_10 = 0
-    stop1_10 = F11_10.shape[1]
-
-elif dat == '20220622' and batch_01 == 'Fil 5_6' and batch_10 == 'Fil 5_5':
-    start1_01 = 1
-    stop1_01 = -1
-    start1_10 = 0
-    stop1_10 = F11_10.shape[1]
-
-elif dat == '20211216' and batch_01 == 'Fil 19_2' and batch_10 == 'Fil 19':
-    start1_01 = 4
-    stop1_01 = F11_01.shape[1]
-    start1_10 = 0
-    stop1_10 = -4
-
-else:
-    start1_01 = 0
-    stop1_01 = F11_01.shape[1]
-    start1_10 = 0
-    stop1_10 = F11_10.shape[1]
+""" Fit """
+def func_to_fit(y, omega0, dTmax):
+    if mode == 1:
+        return omega0 * (1 + fes.dOmega1_T(y, dTmax))
+    elif mode == 2:
+        return omega0 * (1 + fes.dOmega2_T(y, dTmax))
+vect_to_fit = vectorize(func_to_fit)
 
 
-""" Differences and sums """
-y_avg = (Y_01[start1_01:stop1_01, 0] + Y_10[start1_10:stop1_10, 0]) / 2
+# Mode 11_01
+f11_01_without_nan = f11_01[where(logical_not(isnan(f11_01)))[0]]
+y11_01_without_nan = y_01[where(logical_not(isnan(f11_01)))[0]]
+to_fit11_01 = f11_01_without_nan - f11(y11_01_without_nan)
+guess = [2*pi*to_fit11_01.max(), 100]
+bounds_inf = (to_fit11_01.min(), 0)
+bounds_sup = (inf, inf)
+print('Fitting mode 11_01')
+fit = curve_fit(vect_to_fit,
+                y11_01_without_nan,
+                to_fit11_01,
+                p0=guess,
+                bounds=(bounds_inf, bounds_sup))
+O11_01, dT11_01 = fit[0]
 
-diff11 = nanmean(F11_10, axis=1)[start1_10:stop1_10]-nanmean(F11_01, axis=1)[start1_01:stop1_01]
-diff12 = nanmean(F12_10, axis=1)[start1_10:stop1_10]-nanmean(F12_01, axis=1)[start1_01:stop1_01]
+# Mode 12_01
+f12_01_without_nan = f12_01[where(logical_not(isnan(f12_01)))[0]]
+y12_01_without_nan = y_01[where(logical_not(isnan(f12_01)))[0]]
+to_fit12_01 = f12_01_without_nan - f12(y12_01_without_nan)
+guess = [2*pi*to_fit12_01.max(), 100]
+bounds_inf = (to_fit12_01.min(), 0)
+bounds_sup = (inf, inf)
+print('Fitting mode 12_01')
+fit = curve_fit(vect_to_fit,
+                y12_01_without_nan,
+                to_fit12_01,
+                p0=guess,
+                bounds=(bounds_inf, bounds_sup))
+O12_01, dT12_01 = fit[0]
 
-ax_diff1.plot(y_avg, diff11/1e3, 'o', label='Peak 1')
-ax_diff1.plot(y_avg, diff12/1e3, 'o', label='Peak 2')
+# Mode 11_10
+f11_10_without_nan = f11_10[where(logical_not(isnan(f11_10)))[0]]
+y11_10_without_nan = y_10[where(logical_not(isnan(f11_10)))[0]]
+to_fit11_10 = f11_10_without_nan + f11(y11_10_without_nan)
+guess = [2*pi*to_fit11_10.max(), 100]
+bounds_inf = (to_fit11_10.min(), 0)
+bounds_sup = (inf, inf)
+print('Fitting mode 11_10')
+fit = curve_fit(vect_to_fit,
+                y11_10_without_nan,
+                to_fit11_10,
+                p0=guess,
+                bounds=(bounds_inf, bounds_sup))
+O11_10, dT11_10 = fit[0]
 
-avg11 = (nanmean(F11_10, axis=1)[start1_10:stop1_10]+nanmean(F11_01, axis=1)[start1_01:stop1_01])/2
-avg12 = (nanmean(F12_10, axis=1)[start1_10:stop1_10]+nanmean(F12_01, axis=1)[start1_01:stop1_01])/2
+# Mode 12_10
+f12_10_without_nan = f12_10[where(logical_not(isnan(f12_10)))[0]]
+y12_10_without_nan = y_10[where(logical_not(isnan(f12_10)))[0]]
+to_fit12_10 = f12_10_without_nan + f12(y12_10_without_nan)
+guess = [2*pi*to_fit12_10.max(), 100]
+bounds_inf = (to_fit12_10.min(), 0)
+bounds_sup = (inf, inf)
+print('Fitting mode 12_10')
+fit = curve_fit(vect_to_fit,
+                y12_10_without_nan,
+                to_fit12_10,
+                p0=guess,
+                bounds=(bounds_inf, bounds_sup))
+O12_10, dT12_10 = fit[0]
 
-ax_sum1.plot(y_avg, avg11/1e3, 'o', label='Peak 1')
-ax_sum1.plot(y_avg, avg12/1e3, 'o', label='Peak 2')
+""" Plot """
+yy = linspace(0, 1, 101)
 
-ax11.plot(y_avg, avg11/1e3, 'o', label='Avg')
-ax12.plot(y_avg, avg12/1e3, 'o', label='Avg')
+fig_diff, ax_diff = subplots()
+plot(y_avg, diff11/1e3, 'o', label='Mode 11')
+plot(y_avg, diff12/1e3, 'o', label='Mode 12')
+plot(yy,  f11(yy)/1e3, label='Interp 11 (%s)'%kind)
+plot(yy,  f12(yy)/1e3, label='Interp 12 (%s)'%kind)
+xlabel('Normalized position $y/L$')
+ylabel('Frequency (kHz)')
+title('Difference "10" - "01"')
+legend()
+fig_diff.tight_layout()
 
-""" Fit avg with dOmega_T """
-if do_fits:
-    def func_to_fit(y, omega0, dTmax):
-        if mode == 1:
-            return omega0 * (1 + fes.dOmega1_T(y, dTmax))
-        elif mode == 2:
-            return omega0 * (1 + fes.dOmega2_T(y, dTmax))
-    vect_to_fit = vectorize(func_to_fit)
-
-    # 1st Peak
-    to_fit11 = 2*pi*avg11[where(logical_not(isnan(avg11)))[0]]
-    y11 = Y_01[where(logical_not(isnan(avg11)))[0], 0]
-    if len(to_fit11) > 0:
-        guess = [2*pi*to_fit11.max(), 100]
-        bounds_inf = (to_fit11.min(), 0)
-        bounds_sup = (inf, inf)
-
-        fit = curve_fit(vect_to_fit,
-                        y11,
-                        to_fit11,
-                        p0=guess,
-                        bounds=(bounds_inf, bounds_sup))
-        O11, dT11 = fit[0]
-
-
-        yy = linspace(0, 1, 101)
-        ax_sum1.plot(yy, vect_to_fit(yy, O11, dT11)/2/pi/1e3, label='Fit peak 1:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O11/2/pi/1e3, dT11))
-        ax11.plot(yy, vect_to_fit(yy, O11, dT11)/2/pi/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O11/2/pi/1e3, dT11))
-
-    # 2nd Peak
-    to_fit12 = 2*pi*avg12[where(logical_not(isnan(avg12)))[0]]
-    y12 = Y_01[where(logical_not(isnan(avg12)))[0], 0]
-    if len(to_fit12) > 0:
-        guess = [2*pi*to_fit12.max(), 100]
-        bounds_inf = (to_fit12.min(), 0)
-        bounds_sup = (inf, inf)
-
-        fit = curve_fit(vect_to_fit,
-                        y12,
-                        to_fit12,
-                        p0=guess,
-                        bounds=(bounds_inf, bounds_sup))
-        O12, dT12 = fit[0]
-
-
-        yy = linspace(0, 1, 101)
-        ax_sum1.plot(yy, vect_to_fit(yy, O12, dT12)/2/pi/1e3, label='Fit peak 2:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O12/2/pi/1e3, dT12))
-        ax12.plot(yy, vect_to_fit(yy, O12, dT12)/2/pi/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O12/2/pi/1e3, dT12))
-
-
-ax11.legend()
-ax12.legend()
+fig11, ax11 = subplots()
+plot(y_01, f11_01/1e3, 'o', mfc='none', label='Raw data')
+plot(y11_01_without_nan, to_fit11_01/1e3, 'o', label='To fit 11')
+plot(yy, vect_to_fit(yy, O11_01, dT11_01)/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O11_01/2/pi/1e3, dT11_01))
+plot(y_10, f11_10/1e3, 'o', mfc='none', label='Raw data')
+plot(y11_10_without_nan, to_fit11_10/1e3, 'o', label='To fit 11')
+plot(yy, vect_to_fit(yy, O11_10, dT11_10)/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O11_10/2/pi/1e3, dT11_10))
+xlabel('Normalized position $y/L$')
+ylabel('Frequency (kHz)')
+title('Mode 11')
+legend()
 fig11.tight_layout()
+
+fig12, ax12 = subplots()
+plot(y_01, f12_01/1e3, 'o', mfc='none', label='Raw data')
+plot(y12_01_without_nan, to_fit12_01/1e3, 'o', label='To fit 12')
+plot(yy, vect_to_fit(yy, O12_01, dT12_01)/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O12_01/2/pi/1e3, dT12_01))
+plot(y_10, f12_10/1e3, 'o', mfc='none', label='Raw data')
+plot(y12_10_without_nan, to_fit12_10/1e3, 'o', label='To fit 12')
+plot(yy, vect_to_fit(yy, O12_10, dT12_10)/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O12_10/2/pi/1e3, dT12_10))
+xlabel('Normalized position $y/L$')
+ylabel('Frequency (kHz)')
+title('Mode 12')
+legend()
 fig12.tight_layout()
-
-ax_diff1.legend()
-fig_diff1.tight_layout()
-ax_sum1.legend()
-fig_sum1.tight_layout()
-
-show()
-
-if savefigs:
-    fig11.savefig(figsdir+'\\Mode_11')
-    fig12.savefig(figsdir+'\\Mode_12')
-
-    fig_diff1.savefig(figsdir+'\\Difference_1')
-    fig_sum1.savefig(figsdir+'\\Sum_1')
-    print('Figures saved')
-else:
-    print('savefigs set to', savefigs)
 
 show()

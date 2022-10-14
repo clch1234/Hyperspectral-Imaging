@@ -2,6 +2,7 @@
 """
 Script for calculating average and difference of frequency during a round-trip of measurement,
 fit average with temperature contribution on frequency shift
+then with temperature + back-action contributions.
 Here only for the mode measured in parallel
 
 Author :
@@ -16,6 +17,7 @@ from data_RSA_new import *
 from functions import *
 import functions_engraving_study as fes
 from scipy.optimize import curve_fit
+from scipy.integrate import quad
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -29,12 +31,15 @@ mode = 2 # nb of mechanical mode
 
 savefigs = True
 do_fits = True
+fit_21 = False # Ignored if do_fits == False
+fit_22 = True # Ignored if do_fits == False
+
 
 dirname = "D:\\Documents\\Boulot\\Grenoble\\Data\\%s"%dat
 
 """ Create figures """
 if savefigs:
-    figsdir = dirname + '\\Figures\\Sum_diff_%s_%s'%(batch_01, batch_10)
+    figsdir = dirname + '\\Figures\\Sum_diff_%s_%s\\Back-action'%(batch_01, batch_10)
     if not os.path.isdir(figsdir):
         os.makedirs(figsdir)
 
@@ -177,6 +182,23 @@ if batch_01 == 'Fil 6_3' and batch_10 == 'Fil 6_4':
     stop21_10 = len(y21_10_new)
 
     start22_01 = 1
+    stop22_01 = len(y22_10_new)
+    start22_10 = 1
+    stop22_10 = len(y22_10_new)
+
+    # alternative:
+    pts_to_ignore_21_01 = None
+    pts_to_ignore_21_10 = None
+    pts_to_ignore_22_01 = None
+    pts_to_ignore_22_10 = None
+
+elif batch_01 == 'Fil 6_3' and batch_10 == 'Fil 6_2':
+    start21_01 = 0
+    stop21_01 = 0
+    start21_10 = 0
+    stop21_10 = 0
+
+    start22_01 = 1
     stop22_01 = len(y22_01_new)
     start22_10 = 1
     stop22_10 = len(y22_10_new)
@@ -300,7 +322,7 @@ if do_fits:
 
     # 1st Peak
     to_fit21 = 2*pi*avg21[where(logical_not(isnan(avg21)))[0]]
-    if len(to_fit21) > 0:
+    if fit_21 and len(to_fit21) > 0:
         guess = [2*pi*to_fit21.max(), 100]
         bounds_inf = (to_fit21.min(), 0)
         bounds_sup = (inf, inf)
@@ -319,7 +341,7 @@ if do_fits:
 
     # 2nd Peak
     to_fit22 = 2*pi*avg22[where(logical_not(isnan(avg22)))[0]]
-    if len(to_fit22) > 0:
+    if fit_22 and len(to_fit22) > 0:
         guess = [2*pi*to_fit22.max(), 100]
         bounds_inf = (to_fit22.min(), 0)
         bounds_sup = (inf, inf)
@@ -337,14 +359,115 @@ if do_fits:
         ax22.plot(yy, vect_to_fit(yy, O22, dT22)/2/pi/1e3, label='Fit:\n$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$'%(O22/2/pi/1e3, dT22))
 
 
-ax21.legend()
-ax22.legend()
+""" Back-action """
+L = 1
+
+# With uniform beta
+beta0 = 1
+def beta(y):
+    return beta0
+def kBA(y0, val):
+    if mode == 1:
+        phi = phi1
+    elif mode == 2:
+        phi = phi2
+    else:
+        raise ValueError('Mode should be 1 or 2 !')
+
+    alpha = (1+1j)/sqrt(2) * val/L
+    int1 = quad(lambda y: beta(y)*fes.phi(y)*sinh(alpha*y)/sinh(alpha*y0),
+                 0,
+                 y0)[0]
+    int2 = quad(lambda y: beta(y)*fes.phi(y)*cosh(alpha*(y-L))/cosh(alpha*(y0-L)),
+                 0,
+                 y0)[0]
+    return -alpha * sinh(alpha*y0) * cosh(alpha*(y0-L)) / cosh(alpha*L) * fes.phi(y0) / fes.phi(L) * (int1 + int2)
+
+# With Dirac beta
+##def kBA(y0, yD=.4*L):
+##    if mode == 1:
+##        phi = phi1
+##    elif mode == 2:
+##        phi = phi2
+##    else:
+##        raise ValueError('Mode should be 1 or 2 !')
+##    int1 = fes.phi(yD)*sinh(alpha*yD)/sinh(alpha*y0)
+##    int2 = fes.phi(yD)*cosh(alpha*(yD-L))/cosh(alpha*(y0-L))
+##    return -alpha * sinh(alpha*y0) * cosh(alpha*(y0-L)) / cosh(alpha*L) * fes.phi(y0) / fes.phi(L) * (int1 + int2)
+
+if do_fits:
+    def func_to_fit_ba(y, omega0, dTmax, A, val):
+        if mode == 2:
+            return omega0 * (1 + fes.dOmega2_T(y, dTmax)+A*real(kBA(y, val)))
+        else:
+            raise ValueError('Mode should be 2')
+    vect_to_fit_ba = vectorize(func_to_fit_ba)
+
+    # 1st Peak
+    to_fit21 = 2*pi*avg21[where(logical_not(isnan(avg21)))[0]]
+    if fit_21 and len(to_fit21) > 0:
+        guess = [2*pi*to_fit21.max(), 100, 1, 10]
+        bounds_inf = (to_fit21.min(), 0, 0, 0)
+        bounds_sup = (inf, inf, inf, inf)
+
+        fit = curve_fit(vect_to_fit_ba,
+                        y_avg21,
+                        to_fit21,
+                        p0=guess,
+                        bounds=(bounds_inf, bounds_sup))
+        O21_ba, dT21_ba, A21, val21 = fit[0]
+
+        print('Omega 21 BA =', O21_ba)
+        print('dTmax 21 BA =', dT21_ba)
+        print('A21 =', A21)
+        print('val21 =', val21)
+
+        lab21 = '$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$\n$A_{21} = %.2f\\times 10^{-6}$\n$(\\alpha L)_{21} = %.2f$'%(O21/2/pi/1e3, dT21, A21/1e-6, val21)
+
+        yy = linspace(0, 1, 101)
+        ax_sum2.plot(yy, vect_to_fit_ba(yy, O21_ba, dT21_ba, A21, val21)/2/pi/1e3,
+                     label='Fit peak 1 with BA:\n'+lab21)
+        ax21.plot(yy, vect_to_fit_ba(yy, O21_ba, dT21_ba, A21, val21)/2/pi/1e3,
+                  label='Fit with BA:\n'+lab21)
+
+    # 2nd Peak
+    to_fit22 = 2*pi*avg22[where(logical_not(isnan(avg22)))[0]]
+    if fit_22 and len(to_fit22) > 0:
+        guess = [2*pi*to_fit22.max(), 100, 1, 10]
+        bounds_inf = (to_fit22.min(), 0, 0, 0)
+        bounds_sup = (inf, inf, inf, inf)
+
+        fit = curve_fit(vect_to_fit_ba,
+                        y_avg22,
+                        to_fit22,
+                        p0=guess,
+                        bounds=(bounds_inf, bounds_sup))
+        O22_ba, dT22_ba, A22, val22 = fit[0]
+
+        print('Omega 22 BA =', O22_ba)
+        print('dTmax 22 BA =', dT22_ba)
+        print('A22 =', A22)
+        print('val22 =', val22)
+
+        lab22 = '$\Omega_0/2\pi = %.1f kHz$\n$\\Delta T_{max} = %i$\n$A_{22} = %.2f\\times 10^{-6}$\n$(\\alpha L)_{22} = %.2f$'%(O22/2/pi/1e3, dT22, A22/1e-6, val22)
+
+        yy = linspace(0, 1, 101)
+        ax_sum2.plot(yy, vect_to_fit_ba(yy, O22_ba, dT22_ba, A22, val22)/2/pi/1e3,
+                     label='Fit peak 2 with BA:\n'+lab22)
+        ax22.plot(yy, vect_to_fit_ba(yy, O22_ba, dT22_ba, A22, val22)/2/pi/1e3,
+                  label='Fit with BA:\n'+lab22)
+
+
+ax21.legend(bbox_to_anchor=(1., 1.))
 fig21.tight_layout()
+
+ax22.legend(bbox_to_anchor=(1., 1.))
 fig22.tight_layout()
 
-ax_diff2.legend()
+ax_diff2.legend(bbox_to_anchor=(1., 1.))
 fig_diff2.tight_layout()
-ax_sum2.legend()
+
+ax_sum2.legend(bbox_to_anchor=(1., 1.))
 fig_sum2.tight_layout()
 
 show()
