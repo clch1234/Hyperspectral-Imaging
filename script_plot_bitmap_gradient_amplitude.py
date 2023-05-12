@@ -1,6 +1,9 @@
 # -*- coding: cp1252 -*-
 """
-Script for plotting the lorentzian fit of a given spectrum measured for a nanowire
+Script for plotting the following:
+    - Bitmap image of acquisition
+    - Gradient along X-axis of bitmap
+    - Map of peak amplitude
 
 Author :
     Clément Chardin
@@ -15,6 +18,8 @@ from data_RSA_new import *
 from functions import *
 from data_selector import DataSelector
 from fit_spectres import multi_lorentz
+import functions_engraving_study as fes
+from scipy.optimize import curve_fit
 
 # To disable matplotlib's UserWarning
 import warnings
@@ -25,7 +30,7 @@ remove_aberrant = True # Remove aberrant frequency values
 normalize_from_global_image = False # Use global image taken before acquisition for position normalization
 old_position_correction = False # Normally never needs to be changed
 
-# Data selector
+""" Data selector """
 ds = DataSelector(description="Select a single rectangle")
 ds.savefiles_var.set(False)
 ds.savefiles_check['state'] = 'disabled'
@@ -48,24 +53,23 @@ if not AR in ('A', 'R', None):
 
 savefigs = ds.savefigs_var.get()
 
-print('Starting plot a single fit script.')
+print('Starting plot fits script.')
 print('Batch :', batch, '\nRectangle :', rectangle)
 
 """ Load data """
 filesdir = datadir+u'\\%s\\%s\\Data_files'%(dat, batch)
+savedir = filesdir+u'\\Fits_%s_%s'%(batch, rectangle)
 
+# Load fits
 prefixe_AR = AR+'_' if AR in ('A', 'R') else ''
 sufixe_AR = ' '+AR if AR in ('A', 'R') else ''
-offsets = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_offsets.txt'%(batch, rectangle))
-f1s = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_f1s.txt'%(batch, rectangle))
-gammas1 = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_gammas1.txt'%(batch, rectangle))
-ampls1 = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_ampls1.txt'%(batch, rectangle))
-f2s = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_f2s.txt'%(batch, rectangle))
-gammas2 = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_gammas2.txt'%(batch, rectangle))
-ampls2 = loadtxt(filesdir+'\\'+prefixe_AR+'%s_rectangle_%s_Fit_ampls2.txt'%(batch, rectangle))
+if os.path.isfile(savedir+'\\'+prefixe_AR+batch+'_gammas1.txt'):
+    f1s, gammas1, ampls1, xs1, ys1, f2s, gammas2, ampls2, xs2, ys2 = load_fit_data(savedir, batch, prefixe_AR)
+else:
+    save_fit_data(datadir, dat, batch, rectangle, sens, remove_aberrant, AR, normalize_from_global_image)
+    f1s, gammas1, ampls1, xs1, ys1, f2s, gammas2, ampls2, xs2, ys2 = load_fit_data(savedir, batch, prefixe_AR)
 
-popts = [(offsets[ii], f1s[ii]*2*pi, gammas1[ii], ampls1[ii], f2s[ii]*2*pi, gammas2[ii], ampls2[ii]) for ii in range(len(f1s))]
-
+# Load bitmap
 if AR is None:
     spectrogram = loadtxt(dirname+'\\Spectres.txt')
     bitmap = loadtxt(dirname+u'\\Bitmap.txt')
@@ -111,58 +115,97 @@ F = get_corrected_freqs(dirname, params, old_corrections=old_position_correction
 I = repeat(range(spectrogram.shape[0]), spectrogram.shape[1]).reshape(spectrogram.shape)
 xshape, yshape = [int(float(st)) for st in params[u'Résolution (pixels)'].split('x')] if dat < '20211212' else [int(float(st)) for st in params[u'Resolution (pixels)'].split('x')]
 
+centers, edges, widths, first_line_found, last_line_found = detect_NW_edges(bitmap, X_ini)
+X_corrected = get_normalized_X(X_ini, centers, widths, first_line_found, last_line_found)
+
+if normalize_from_global_image:
+    print('Normalizing from global image')
+    Y_corrected = get_normalized_Y(datadir, dat, batch, rectangle, sens)#, color_box='r')
+else:
+    print('Normalizing from acquisition image')
+    length = abs(Y_ini[first_line_found, 0] - Y_ini[last_line_found, 0])
+    basis = Y_ini[last_line_found, 0]
+    Y_corrected = (basis - Y_ini) / length
+
 print('Files loaded.')
 
-spectrum_nb = int(input('Spectrum nb ? '))
-plot_position = not input('Plot position ? [y]/n ') == 'n'
-plot_legend = not input('Use legend ? [y]/n ') == 'n'
-add_title = not input('Add title "Spectrum %i" ? [y]/n '%spectrum_nb) == 'n'
+""" Calculate gradient """
+grad = gradient(bitmap, axis=1)
+print('Gradient calculated')
 
-spectrum = spectrogram[spectrum_nb]
-popt = popts[spectrum_nb]
-ff = F[spectrum_nb]
+""" Plot """
+fig_bitmap, ax_bitmap = subplots()
+pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
+xlabel('Normalized X position')
+ylabel('Normalized Y position')
+title('Raw image of measurement')
+xlim(-2, 2)
+ax_bitmap.set_aspect(10)
+tight_layout()
 
-fit = array([multi_lorentz(2*pi*f, popt) for f in ff])
+fig_grad, ax_grad = subplots()
+pcolor(X_corrected, Y_corrected, grad, shading='nearest') #cmap='gray', 
+xlabel('Normalized X position')
+ylabel('Normalized Y position')
+title('Gradient of the raw image image of measurement')
+colorbar()
+xlim(-2, 2)
+ax_grad.set_aspect(10)
+tight_layout()
 
-if popt[1] < popt[4]:
-    omega1 = popt[1]
-    gamma1 = popt[2]
-    A1 = popt[3]
-    omega2 = popt[4]
-    gamma2 = popt[5]
-    A2 = popt[6]
-else:
-    print(spectrum_nb, 'inversion des modes')
-    omega1 = popt[4]
-    gamma1 = popt[5]
-    A1 = popt[6]
-    omega2 = popt[1]
-    gamma2 = popt[2]
-    A2 = popt[3]
+## This is a log plot of abs(grad) ##
+fig_abs_grad, ax_abs_grad = subplots()
+# Remove 0 value from grad, replace by next smallest (abs) value
+grad[where(grad==0)] = nan
+m = nanmin(abs(grad))
+grad[where(isnan(grad))] = m
+# Normalize for log plot
+norm = colors.LogNorm(vmin=nanmin(abs(grad)), vmax=nanmax(abs(grad)))
+# Plot
+pcolor(X_corrected, Y_corrected, abs(grad), norm=norm, shading='nearest') #cmap='gray', 
+xlabel('Normalized X position')
+ylabel('Normalized Y position')
+title('Gradient of the raw image image of measurement')
+colorbar(label='Absolute value of gradient (arb.)')
+xlim(-2, 2)
+ax_abs_grad.set_aspect(10)
+tight_layout()
 
-fig, ax = subplots()
-plot(ff/1e3, spectrum, label='Data')
-plot(ff/1e3, fit, label='$\Omega_1/2\pi \simeq %i$\n$\Gamma_1/2\pi \simeq %i$\n$A_1 \simeq %.4f$\n$\Omega_2/2\pi \simeq %i$\n$\Gamma_2/2\pi \simeq %i$\n$A_2 \simeq %.4f$'%(omega1/2/pi, gamma1/2/pi, A1, omega2/2/pi, gamma2/2/pi, A2))
-if plot_legend:
-    legend()
-xlabel('Frequency (kHz)')
-ylabel('dB')
-if add_title:
-    title('Spectrum %i'%spectrum_nb)
+fig_ampl1, ax_ampl1 = subplots()
+pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
+norm = colors.LogNorm(vmin=nanmin(ampls1), vmax=nanmax(ampls1))
+sc = scatter(xs1, ys1, c=ampls1, norm=norm)
+colorbar(sc, label='Amplitude (arb.)')
+xlabel('Normalized X position')
+ylabel('Normalized Y position')
+title('Amplitude Mode 1')
+xlim(-2, 2)
+ax_ampl1.set_aspect(10)
+tight_layout()
 
-if plot_position:
-    axx = inset_axes(ax, width="30%", height ="30%", loc=2)
-    axx.xaxis.set_visible(False)
-    axx.yaxis.set_visible(False)
-    axx.pcolor(X_ini, Y_ini, bitmap, cmap='gray', shading='nearest')
-    axx.invert_yaxis()
-    yy, xx = spectrum_nb//xshape, spectrum_nb%xshape
-    axx.plot(X_ini[yy, xx], Y_ini[yy, xx], 'xr')
-
-fig.tight_layout()
-
-if savefigs:
-    figsdir = datadir+u'\\%s\\%s\\Figures'%(dat, batch)
-    fig.savefig(figsdir+'\\spectrum_'+str(spectrum_nb).zfill(5))
+fig_ampl2, ax_ampl2 = subplots()
+pcolor(X_corrected, Y_corrected, bitmap, cmap='gray', shading='nearest')
+norm = colors.LogNorm(vmin=nanmin(ampls2), vmax=nanmax(ampls2))
+sc = scatter(xs2, ys2, c=ampls2, norm=norm)
+colorbar(sc, label='Amplitude (arb.)')
+xlabel('Normalized X position')
+ylabel('Normalized Y position')
+title('Amplitude Mode 2')
+xlim(-2, 2)
+ax_ampl2.set_aspect(10)
+tight_layout()
 
 show()
+
+""" Save """
+if savefigs:
+    figsdir = datadir+u'\\%s\\%s\\Figures\\Bitmap_Gradient_Amplitude'%(dat, batch)
+    if not os.path.isdir(figsdir):
+        os.mkdir(figsdir)
+
+    fig_bitmap.savefig(figsdir+'\\Bitmap.png')
+    fig_grad.savefig(figsdir+'\\Gradient.png')
+    fig_abs_grad.savefig(figsdir+'\\Gradient_Abs.png')
+    fig_ampl1.savefig(figsdir+'\\Amplitude1.png')
+    fig_ampl2.savefig(figsdir+'\\Amplitude2.png')
+    print('Figures saved')

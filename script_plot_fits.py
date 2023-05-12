@@ -171,13 +171,14 @@ for ii, spectrum in enumerate(spectrogram):
 
         # Zoom mode 1
         fig1, ax1 = subplots()
-        plot(ff, spectrum, 'o-', label='Data')
+        plot(ff, spectrum, 'o', label='Data')
         plot(ff, fit, label='$\Omega_1/2\pi = %s$\n$\Gamma_1/2\pi = %s$\n$A_1 = %s$'%(omega1/2/pi, gamma1/2/pi, A1))
         legend()
         xlabel('Frequency (Hz)')
         ylabel('dB')
         title('Spectrum %i - Mode 1'%ii)
-        xlim(omega1/2/pi - max(5*gamma1/2/pi, 500), omega1/2/pi + max(5*gamma1/2/pi, 500))
+        #xlim(omega1/2/pi - max(5*gamma1/2/pi, 500), omega1/2/pi + max(5*gamma1/2/pi, 500))
+        xlim(omega1/2/pi - 2000, omega1/2/pi + 2000)
 
         axx = inset_axes(ax1, width="30%", height ="30%", loc=2)
         axx.xaxis.set_visible(False)
@@ -189,13 +190,14 @@ for ii, spectrum in enumerate(spectrogram):
 
         # Zoom mode 2
         fig2, ax2 = subplots()
-        plot(ff, spectrum, 'o-', label='Data')
+        plot(ff, spectrum, 'o', label='Data')
         plot(ff, fit, label='$\Omega_2/2\pi = %s$\n$\Gamma_2/2\pi = %s$\n$A_2 = %s$'%(omega2/2/pi, gamma2/2/pi, A2))
         legend()
         xlabel('Frequency (Hz)')
         ylabel('dB')
         title('Spectrum %i - Mode 2'%ii)
-        xlim(omega2/2/pi - max(5*gamma2/2/pi, 500), omega2/2/pi + max(5*gamma2/2/pi, 500))
+##        xlim(omega2/2/pi - max(5*gamma2/2/pi, 500), omega2/2/pi + max(5*gamma2/2/pi, 500))
+        xlim(omega2/2/pi - 2000, omega2/2/pi + 2000)
 
         axx = inset_axes(ax2, width="30%", height ="30%", loc=2)
         axx.xaxis.set_visible(False)

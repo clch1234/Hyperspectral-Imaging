@@ -42,8 +42,8 @@ spec = '11'
 dat = '20220622'
 key = 'NW_'+nw+'_fil_'+fil+'_spec_'+spec.zfill(4)
 
-savefigs = True
-save_data = True
+savefigs = False
+save_data = False
 
 dirname = "D:\\Documents\\Boulot\\Grenoble\\Data\\%s"%dat
 filename_oscillo = 'NW'+nw+'_fil'+fil+'_spec'+spec+'_oscillo.csv'

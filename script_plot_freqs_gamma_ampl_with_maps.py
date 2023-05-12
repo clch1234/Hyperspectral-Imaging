@@ -114,35 +114,38 @@ ys = Y_corrected.ravel()
 # Figure frequencies
 fig_freqs, ax_freqs = subplots()
 if len(ys1) > 0:
-    plot(ys1, f1s/1e3, 'o', label='Mode 1')
+    plot(ys1, f1s/1e3, 'o', label='Mode 1.1')
 if len(ys2) > 0:
-    plot(ys2, f2s/1e3, 'o', label='Mode 2')
+    plot(ys2, f2s/1e3, 'o', label='Mode 1.2')
 xlabel('y/L')
 ylabel('Frequency (kHz)')
 title('Frequencies')
 legend()
+tight_layout()
 
 # Figure gamma
 fig_gammas, ax_gammas = subplots()
 if len(ys1) > 0:
-    plot(ys1, gammas1/2/pi, 'o', label='Mode 1')
+    plot(ys1, gammas1/2/pi, 'o', label='Mode 1.1')
 if len(ys2) > 0:
-    plot(ys2, gammas2/2/pi, 'o', label='Mode 2')
+    plot(ys2, gammas2/2/pi, 'o', label='Mode 1.2')
 xlabel('y/L')
 ylabel('$\Gamma/2\pi$ (Hz)')
 title('Damping Rates')
 legend()
+tight_layout()
 
 # Figure amplitude 
 fig_ampls, ax_ampls = subplots()
 if len(ys1) > 0:
-    semilogy(ys1, ampls1, 'o', label='Mode1')
+    semilogy(ys1, ampls1, 'o', label='Mode 1.1')
 if len(ys2) > 0:
-    semilogy(ys2, ampls2, 'o', label='Mode2')
+    semilogy(ys2, ampls2, 'o', label='Mode 1.2')
 xlabel('y/L')
 ylabel('Amplitude')
 title('Amplitudes')
 legend()
+tight_layout()
 
 # Maps
 fig_map_f1, ax_map_f1 = subplots()

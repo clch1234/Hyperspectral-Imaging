@@ -27,7 +27,7 @@ batch = 'Fil 6'
 rectangle = '1'
 inversion = '0016'
 
-savefigs = True
+savefigs = False
 
 dirname = "D:\\Documents\\Boulot\\Grenoble\\Data\\%s"%dat
 
@@ -57,6 +57,11 @@ fig22, ax22 = subplots()
 ax22.set_xlabel('y/L')
 ax22.set_ylabel('Frequency (kHz)')
 ax22.set_title('2nd mechanical mode, 2nd peak')
+
+fig_chrono, ax = subplots()
+ax.set_xlabel('y/L')
+ax.set_ylabel('Frequency (kHz)')
+ax.set_title('Mode 1.1 in chronological order')
 
 """ Load and plot """
 for key, corres in ppa.correspondences.items():
@@ -106,6 +111,10 @@ for key, corres in ppa.correspondences.items():
             ax11.plot(ys11, f11s/1e3, 'o', label=corres, c='C%i'%idx_color)
             ax12.plot(ys12, f12s/1e3, 'o', label=corres, c='C%i'%idx_color)
 
+            """ Test """
+            yy = int(corres.split('_')[-1]) + ys11 if ppa.dd_sens[key] == '01' else int(corres.split('_')[-1]) + (1-ys11)
+            ax.plot(yy, f11s/1e3, 'o', label=corres, c='C%i'%idx_color)
+
         else:
             # After we switch the RSAs : mode 1 on continuous acquisition, mode 2 on ViBr
             dir_mode1 = dirname + u'\\%s\\Data_files\\Parallel_acquisition'%corres
@@ -138,6 +147,10 @@ for key, corres in ppa.correspondences.items():
             ax11.plot(ys11, f11s/1e3, 'o', label=corres, c='C%i'%idx_color)
             ax12.plot(ys12, f12s/1e3, 'o', label=corres, c='C%i'%idx_color)
 
+            """ Test """
+            yy = int(corres.split('_')[-1]) + ys11 if ppa.dd_sens[key] == '01' else int(corres.split('_')[-1]) + (1-ys11)
+            ax.plot(yy, f11s/1e3, 'o', label=corres, c='C%i'%idx_color)
+
             """ Load mode 2 """
             f21s, gammas21, ampls21, xs21, ys21, f22s, gammas22, ampls22, xs22, ys22 = load_fit_data(dir_mode2, corres)
             
@@ -155,6 +168,7 @@ fig11.tight_layout()
 fig12.tight_layout()
 fig21.tight_layout()
 fig22.tight_layout()
+fig_chrono.tight_layout()
 
 show()
 
@@ -163,6 +177,7 @@ if savefigs:
     fig12.savefig(figsdir+'\\Mode_12')
     fig21.savefig(figsdir+'\\Mode_21')
     fig22.savefig(figsdir+'\\Mode_22')
+    fig_chrono.savefig(figsdir+'\\Mode_11_chrono')
     print('Figures saved')
 else:
     print('savefigs set to', savefigs)
